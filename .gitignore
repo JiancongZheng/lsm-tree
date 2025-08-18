@@ -1,0 +1,7 @@
+# 忽略编译生成目录
+bin/
+lib/
+build/
+
+# 忽略 VSCode 配置目录
+.vscode/
