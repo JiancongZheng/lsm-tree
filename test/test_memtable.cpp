@@ -117,72 +117,72 @@ TEST(MemTableTest, IteratorOperations) {
     memtable.freeze_memtable();
 }
 
-// TEST(MemTableTest, ConcurrentOperation) {
-//     MemTable memtable;
-//     const int num_readers = 4;
-//     const int num_writers = 2;
-//     const int num_operations = 1000;
+TEST(MemTableTest, ConcurrentOperation) {
+    MemTable memtable;
+    const int num_readers = 4;
+    const int num_writers = 2;
+    const int num_operations = 1000;
 
-//     std::atomic<bool> start(false);
-//     std::atomic<int>  thread_counter(num_readers + num_writers);
+    std::atomic<bool> start(false);
+    std::atomic<int>  thread_counter(num_readers + num_writers);
 
-//     std::vector<std::string> insert_keys;
-//     std::shared_mutex keys_mutex;
+    std::vector<std::string> insert_keys;
+    std::shared_mutex keys_mutex;
 
-//     auto writer_func = [&](int thread_id) {
-//         while (!start) { std::this_thread::yield(); }
+    auto writer_func = [&](int thread_id) {
+        while (!start) { std::this_thread::yield(); }
 
-//         for (int i = 0; i < num_operations; ++i) {
-//             std::string key = "key_" + std::to_string(thread_id) + "_" + std::to_string(i);
-//             std::string val = "val_" + std::to_string(thread_id) + "_" + std::to_string(i);
-//             memtable.put(key, val, 0);
-//             {
-//                 std::unique_lock<std::shared_mutex> lock(keys_mutex);
-//                 insert_keys.push_back(key);
-//             }
-//             std::this_thread::sleep_for(std::chrono::microseconds(rand() % 100));
-//         }
+        for (int i = 0; i < num_operations; ++i) {
+            std::string key = "key_" + std::to_string(thread_id) + "_" + std::to_string(i);
+            std::string val = "val_" + std::to_string(thread_id) + "_" + std::to_string(i);
+            memtable.put(key, val, 0);
+            {
+                std::unique_lock<std::shared_mutex> lock(keys_mutex);
+                insert_keys.push_back(key);
+            }
+            std::this_thread::sleep_for(std::chrono::microseconds(rand() % 100));
+        }
 
-//         thread_counter.fetch_sub(1);
-//     };
+        thread_counter.fetch_sub(1);
+    };
 
-//     auto reader_func = [&](int thread_id) {
-//         while (!start) { std::this_thread::yield(); }
+    auto reader_func = [&](int thread_id) {
+        while (!start) { std::this_thread::yield(); }
 
-//         int found_count = 0;
-//         for (int i = 0; i < num_operations; ++i) {
-//             std::string tofind_key;
-//             {
-//                 std::unique_lock<std::shared_mutex> lock(keys_mutex);
-//                 if (!insert_keys.empty()) {
-//                     tofind_key = insert_keys[rand() % insert_keys.size()];
-//                 }
-//             }
-//             if (!tofind_key.empty()) {
-//                 auto result = memtable.get(tofind_key, 0);
-//                 if (result.is_valid()) { ++found_count; }
-//             }
-//             std::this_thread::sleep_for(std::chrono::microseconds(rand() % 50));
-//         }
+        int found_count = 0;
+        for (int i = 0; i < num_operations; ++i) {
+            std::string tofind_key;
+            {
+                std::unique_lock<std::shared_mutex> lock(keys_mutex);
+                if (!insert_keys.empty()) {
+                    tofind_key = insert_keys[rand() % insert_keys.size()];
+                }
+            }
+            if (!tofind_key.empty()) {
+                auto result = memtable.get(tofind_key, 0);
+                if (result.is_valid()) { ++found_count; }
+            }
+            std::this_thread::sleep_for(std::chrono::microseconds(rand() % 50));
+        }
 
-//         thread_counter.fetch_sub(1);
-//     };
+        thread_counter.fetch_sub(1);
+    };
 
-//     std::vector<std::thread> writers;
-//     std::vector<std::thread> readers;
+    std::vector<std::thread> writers;
+    std::vector<std::thread> readers;
 
-//     for (int i = 0; i < num_writers; ++i) { writers.emplace_back(writer_func, i); }
-//     for (int i = 0; i < num_readers; ++i) { readers.emplace_back(reader_func, i); }
+    for (int i = 0; i < num_writers; ++i) { writers.emplace_back(writer_func, i); }
+    for (int i = 0; i < num_readers; ++i) { readers.emplace_back(reader_func, i); }
 
-//     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-//     start = true;
+    start = true;
 
-//     while (thread_counter.load() != 0) { std::this_thread::yield(); }
+    while (thread_counter.load() != 0) { std::this_thread::yield(); }
 
-//     for (auto &writer : writers) { writer.join(); }
-//     for (auto &reader : readers) { reader.join(); }
-// }
+    for (auto &writer : writers) { writer.join(); }
+    for (auto &reader : readers) { reader.join(); }
+}
 
 TEST(MemTableTest, IteratorPreffix) {
     MemTable memtable;
