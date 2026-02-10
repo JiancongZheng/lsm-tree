@@ -25,12 +25,13 @@ file(GLOB BLOCK ${CMAKE_SOURCE_DIR}/src/block/*.cpp)
 add_library(block SHARED ${BLOCK})
 target_link_libraries(block)
 
-# 生成可执行文件
-add_executable(skiplist_test ${CMAKE_SOURCE_DIR}/test/skiplist_test.cpp)
-target_link_libraries(skiplist_test skiplist GTest::gtest GTest::gmock)
+# 生成测试文件
+set(TEST_LIBS GTest::gtest GTest::gmock skiplist memtable block)
 
-add_executable(memtable_test ${CMAKE_SOURCE_DIR}/test/memtable_test.cpp)
-target_link_libraries(memtable_test memtable GTest::gtest GTest::gmock)
+file(GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/test/test_*.cpp")
 
-add_executable(block_test ${CMAKE_SOURCE_DIR}/test/block_test.cpp)
-target_link_libraries(block_test block GTest::gtest GTest::gmock)
+foreach(test_src ${TEST_SRCS})
+    get_filename_component(test_name ${test_src} NAME_WE)
+    add_executable(${test_name} ${test_src})
+    target_link_libraries(${test_name} PRIVATE ${TEST_LIBS})
+endforeach()
