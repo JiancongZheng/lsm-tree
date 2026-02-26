@@ -42,12 +42,12 @@ bool TomlConfig::save_config_file() {
     try {
         toml::table config {
             {"lsmt", toml::table {
-                {"LSM_SUM_MEMTABLE_SIZE", 67108864},
-                {"LSM_PER_MEMTABLE_SZIE", 4194304},
-                {"LSM_SST_LEVEL_RATIO",   4},
-                {"LSM_BLOCK_SIZE",        32768},
-                {"LSM_BLOCK_CACHE_SIZE",  1024},
-                {"LSM_BLOCK_CACHE_LRUK",  8},
+                {"LSM_SUM_MEMTABLE_SIZE", lsm_sum_memtable_size},
+                {"LSM_PER_MEMTABLE_SZIE", lsm_per_memtable_size},
+                {"LSM_SST_LEVEL_RATIO",   lsm_sst_level_ratio},
+                {"LSM_BLOCK_SIZE",        lsm_block_size},
+                {"LSM_BLOCK_CACHE_SIZE",  lsm_block_cache_size},
+                {"LSM_BLOCK_CACHE_LRUK",  lsm_block_cache_lruk},
             }},
             {"redis", toml::table{
 
