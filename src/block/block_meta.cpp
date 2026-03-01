@@ -58,25 +58,24 @@ void BlockMeta::decode_meta(const std::vector<uint8_t> &meta_data, std::vector<B
     pointer += sizeof(uint32_t);
 
     // 读取Meta Entry数据
+    meta_entries.resize(entry_number);
     for (uint32_t i = 0; i < entry_number; ++i) {
         BlockMeta entry;
 
         uint32_t offset32;
         memcpy(&offset32, pointer, sizeof(uint32_t));
-        entry.offset = offset32;
+        meta_entries[i].offset = offset32;
         pointer += sizeof(uint32_t);
 
         uint16_t fkey_len;
         memcpy(&fkey_len, pointer, sizeof(uint16_t));
-        entry.fkey.assign(reinterpret_cast<const char *>(pointer + sizeof(uint16_t)), fkey_len);
+        meta_entries[i].fkey.assign(reinterpret_cast<const char *>(pointer + sizeof(uint16_t)), fkey_len);
         pointer += sizeof(uint16_t) + fkey_len;
 
         uint16_t lkey_len;
         memcpy(&lkey_len, pointer, sizeof(uint16_t));
-        entry.lkey.assign(reinterpret_cast<const char *>(pointer + sizeof(uint16_t)), lkey_len);
+        meta_entries[i].lkey.assign(reinterpret_cast<const char *>(pointer + sizeof(uint16_t)), lkey_len);
         pointer += sizeof(uint16_t) + lkey_len;
-
-        meta_entries.push_back(entry);
     }
 
     // 验证Meta Entry哈希值
