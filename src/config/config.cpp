@@ -31,6 +31,10 @@ bool TomlConfig::load_config_file() {
         lsm_block_cache_size  = lsmt_config.at_path("LSM_BLOCK_CACHE_SIZE").value<int>().value();
         lsm_block_cache_lruk  = lsmt_config.at_path("LSM_BLOCK_CACHE_LRUK").value<int>().value();
 
+        auto bf_config = config["bloom_filter"];
+        bloom_filter_expected_elements = bf_config.at_path("BLOOM_FILTER_EXPECTED_ELEMENTS").value<int>().value();
+        bloom_filter_false_positive_rate = bf_config.at_path("BLOOM_FILTER_FALSE_POSITIVE_RATE").value<double>().value();
+
         return true;
     } catch (const std::exception &err) {
         std::cerr << "Error in Load Config File " << config_file_path << ": " << err.what() << std::endl;
@@ -53,7 +57,8 @@ bool TomlConfig::save_config_file() {
 
             }},
             {"bloom_filter", toml::table{
-
+                {"BLOOM_FILTER_EXPECTED_ELEMENTS", bloom_filter_expected_elements},
+                {"BLOOM_FILTER_FALSE_POSITIVE_RATE", bloom_filter_false_positive_rate},
             }},
         };
 
@@ -74,16 +79,18 @@ void TomlConfig::set_default_value() {
     lsm_block_size        = 1024 * 32;
     lsm_block_cache_size  = 1024;
     lsm_block_cache_lruk  = 8;
+
+    bloom_filter_expected_elements = 65536;
+    bloom_filter_false_positive_rate = 0.1;
 }
 
-const TomlConfig &TomlConfig::getInstance(const std::string &file_path = "config.toml") {
+const TomlConfig &TomlConfig::get_instance(const std::string &file_path = "config.toml") {
     static const TomlConfig instance([](const std::string &path) -> std::string {
         std::ifstream file(path);
         return file.good() ? path : std::string("config.toml");
     }(file_path));
     return instance;
 }
-
 
 long long TomlConfig::get_lsm_sum_memtable_size() const {
     return lsm_sum_memtable_size;
@@ -107,5 +114,13 @@ int TomlConfig::get_lsm_block_cache_size() const {
 
 int TomlConfig::get_lsm_block_cache_lruk() const {
     return lsm_block_cache_lruk;
+}
+
+int TomlConfig::get_bloom_filter_expected_elements() const {
+    return bloom_filter_expected_elements;
+}
+
+double TomlConfig::get_bloom_filter_false_positive_rate() const {
+    return bloom_filter_false_positive_rate;
 }
 } // LOG STRUCTURED MERGE TREE
