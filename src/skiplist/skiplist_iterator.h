@@ -17,19 +17,19 @@ public:
 
     SkipListIterator(std::shared_ptr<SkipListNode> node);
 
+    virtual IteratorItem operator*() const override;
+
     virtual BaseIterator& operator++() override;
 
     virtual bool operator==(const BaseIterator &other) const override;
 
     virtual bool operator!=(const BaseIterator &other) const override;
 
-    virtual IteratorItem operator*() const override;
-
     virtual IteratorType get_iterator_type() const override;
 
     virtual bool is_end() const override;
 
-    virtual bool is_valid() const override;
+    virtual bool is_vld() const override;
 
     std::string get_key() const;
 

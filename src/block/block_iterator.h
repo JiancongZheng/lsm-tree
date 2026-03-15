@@ -12,7 +12,7 @@
 namespace LSMT {
 class Block;
 
-class BlockIterator {
+class BlockIterator : public BaseIterator {
 public:
     BlockIterator();
 
@@ -20,19 +20,25 @@ public:
 
     BlockIterator(std::shared_ptr<Block> block, const std::string &key, uint64_t trx_id);
 
-    const std::pair<std::string, std::string>* operator->() const;
+    const IteratorItem* operator->() const;
+    
+    std::pair<std::string, std::string> operator*() const override;
 
-    BlockIterator &operator++();
+    BlockIterator &operator++() override;
 
     BlockIterator operator++(int) = delete;
 
-    bool operator==(const BlockIterator &other) const;
+    bool operator==(const BaseIterator &other) const override;
 
-    bool operator!=(const BlockIterator &other) const;
+    bool operator!=(const BaseIterator &other) const override;
 
-    std::pair<std::string, std::string> operator*() const;
+    IteratorType get_iterator_type() const override;
 
-    bool is_end();
+    uint64_t get_trx_id() const override;
+
+    bool is_end() const override;
+
+    bool is_vld() const override;
 
 private:
     void update_current() const;
