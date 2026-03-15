@@ -17,7 +17,7 @@ TEST(SkipListTest, BasicOperation) {
     EXPECT_EQ(skiplist.get("key1", 0).get_val(), "new_value");
 
     skiplist.remove("key1");
-    EXPECT_FALSE(skiplist.get("key1", 0).is_valid());
+    EXPECT_FALSE(skiplist.get("key1", 0).is_vld());
 }
 
 TEST(SkipListTest, Iterator) {
@@ -62,7 +62,7 @@ TEST(SkipListTest, SequentialInsertAndRemove) {
     }
     for (int i = 0; i < number; ++i) {
         std::string key = "key" + std::to_string(i);
-        EXPECT_FALSE(skiplist.get(key, 0).is_valid());
+        EXPECT_FALSE(skiplist.get(key, 0).is_vld());
     }
 }
 

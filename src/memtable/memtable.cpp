@@ -1,4 +1,4 @@
-#include "./memtable.h"
+#include "memtable.h"
 
 namespace LSMT {
 MemTable::MemTable() : frozen_bytes(0) {
@@ -47,13 +47,13 @@ void MemTable::remove(const std::vector<std::string> &keys, uint64_t trx_id) {
 
 bool MemTable::get_active(const std::string &key, uint64_t trx_id, SkipListIterator &it) {
     it = active_table->get(key, trx_id);
-    return it.is_valid();
+    return it.is_vld();
 }
 
 bool MemTable::get_frozen(const std::string &key, uint64_t trx_id, SkipListIterator &it) {
     for (auto &table : frozen_table) {
         it = table->get(key, trx_id);
-        if (it.is_valid()) { return true; }
+        if (it.is_vld()) { return true; }
     }
     return false;
 }

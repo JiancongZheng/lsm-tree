@@ -18,7 +18,7 @@ TEST(MemTableTest, BasicOperation) {
     memtable.remove("key", 0);
     EXPECT_EQ(memtable.get("key", 0).get_val().empty(), true);
 
-    EXPECT_FALSE(memtable.get("nonekey", 0).is_valid());
+    EXPECT_FALSE(memtable.get("nonekey", 0).is_vld());
 }
 
 TEST(MemTableTest, BatchOperation) {
@@ -160,7 +160,7 @@ TEST(MemTableTest, ConcurrentOperation) {
             }
             if (!tofind_key.empty()) {
                 auto result = memtable.get(tofind_key, 0);
-                if (result.is_valid()) { ++found_count; }
+                if (result.is_vld()) { ++found_count; }
             }
             std::this_thread::sleep_for(std::chrono::microseconds(rand() % 50));
         }

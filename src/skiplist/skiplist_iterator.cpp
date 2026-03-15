@@ -6,6 +6,13 @@ SkipListIterator::SkipListIterator() : current(nullptr), rd_lock(nullptr) { }
 
 SkipListIterator::SkipListIterator(std::shared_ptr<SkipListNode> node): current(node) { }
 
+SkipListIterator::IteratorItem SkipListIterator::operator*() const {
+    if (!current) { 
+        throw std::runtime_error("SkipList Iterator Error: dereferencing end iterator");
+    }
+    return {current->key, current->val};
+}
+
 BaseIterator& SkipListIterator::operator++() {
     if (current) { current = current->next[0]; }
     return *this;
@@ -23,12 +30,6 @@ bool SkipListIterator::operator!=(const BaseIterator &other) const {
     return !(*this == other);
 }
 
-SkipListIterator::IteratorItem SkipListIterator::operator*() const {
-    if (!current) { 
-        throw std::runtime_error("Dereferencing SkipList Iterator"); 
-    }
-    return {current->key, current->val};
-}
 
 IteratorType SkipListIterator::get_iterator_type() const {
     return IteratorType::SkiplistIterator;
@@ -38,7 +39,7 @@ bool SkipListIterator::is_end() const {
     return current == nullptr; 
 }
 
-bool SkipListIterator::is_valid() const { 
+bool SkipListIterator::is_vld() const { 
     return current != nullptr && !current->key.empty(); 
 }
 
