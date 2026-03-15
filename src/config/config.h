@@ -20,7 +20,11 @@ public:
 
     int get_lsm_block_cache_lruk() const;
 
-    static const TomlConfig &getInstance(const std::string &file_path = "config.toml");
+    int get_bloom_filter_expected_elements() const;
+
+    double get_bloom_filter_false_positive_rate() const;
+
+    static const TomlConfig &get_instance(const std::string &file_path = "config.toml");
 
 private:
     TomlConfig(const std::string &file_path);
@@ -40,5 +44,8 @@ private:
     int lsm_block_size;
     int lsm_block_cache_size;
     int lsm_block_cache_lruk;
+
+    int bloom_filter_expected_elements;
+    double bloom_filter_false_positive_rate;
 };
 } // LOG STRUCTURED MERGE TREE
