@@ -30,7 +30,7 @@ void BloomFilter::clear() {
 }
 
 size_t BloomFilter::hash(const std::string &key, size_t idx) const {
-    return std::hash<std::string>()(key + std::to_string(idx));
+    return std::hash<std::string>()(key + std::to_string(idx)) % bits_number;
 }
 
 std::vector<uint8_t> BloomFilter::encode() {

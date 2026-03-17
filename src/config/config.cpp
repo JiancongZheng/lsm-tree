@@ -21,7 +21,7 @@ TomlConfig::~TomlConfig() {
 
 bool TomlConfig::load_config_file() {
     try {
-        auto config = toml::parse(config_file_path);
+        auto config = toml::parse_file(config_file_path);
 
         auto lsmt_config = config["lsmt"];
         lsm_sum_memtable_size = lsmt_config.at_path("LSM_SUM_MEMTABLE_SIZE").value<uint64_t>().value();
@@ -68,8 +68,8 @@ bool TomlConfig::save_config_file() {
         }
     } catch (const std::exception& err) {
         std::cerr << "Error in Save Config File " << config_file_path << ": " << err.what() << std::endl;
-        return false;
     };
+    return false;
 }
 
 void TomlConfig::set_default_value() {
@@ -84,7 +84,7 @@ void TomlConfig::set_default_value() {
     bloom_filter_false_positive_rate = 0.1;
 }
 
-const TomlConfig &TomlConfig::get_instance(const std::string &file_path = "config.toml") {
+const TomlConfig &TomlConfig::get_instance(const std::string &file_path) {
     static const TomlConfig instance([](const std::string &path) -> std::string {
         std::ifstream file(path);
         return file.good() ? path : std::string("config.toml");
