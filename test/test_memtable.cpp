@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 #include <thread>
 
-#include "../src/memtable/memtable.h"
+#include "memtable/memtable.h"
 
 using namespace ::LSMT;
 

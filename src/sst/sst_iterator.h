@@ -6,8 +6,8 @@
 #include <vector>
 #include <utility>
 
-#include "../iterator/iterator.h"
-#include "../block/block_iterator.h"
+#include "iterator/iterator.h"
+#include "block/block_iterator.h"
 
 namespace LSMT {
 class SST;

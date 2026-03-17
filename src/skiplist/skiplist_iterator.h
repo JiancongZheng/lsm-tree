@@ -6,7 +6,7 @@
 #include <shared_mutex>
 #include <string>
 
-#include "../iterator/iterator.h"
+#include "iterator/iterator.h"
 
 namespace LSMT {
 struct SkipListNode;

@@ -1,4 +1,4 @@
-#include "./block_cache.h"
+#include "block_cache.h"
 
 namespace LSMT {
 BlockCache::BlockCache(size_t capacity, size_t k) : capacity(capacity), K(k) {

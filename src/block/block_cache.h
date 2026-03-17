@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "./block.h"
+#include "block.h"
 
 namespace LSMT {
 struct CacheItem {

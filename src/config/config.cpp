@@ -1,8 +1,8 @@
-#include "./config.h"
-
 #include <iostream>
 #include <fstream>
 #include <toml++/toml.hpp>
+
+#include "config.h"
 
 namespace LSMT {
 TomlConfig::TomlConfig(const std::string &file_path) : config_file_path(file_path) {

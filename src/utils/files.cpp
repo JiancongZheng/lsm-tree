@@ -1,5 +1,4 @@
-// #include "./cursor.h"
-#include "./files.h"
+#include "files.h"
 
 namespace LSMT {
 FileObj::FileObj() : file(std::make_unique<StdFile>()) { }

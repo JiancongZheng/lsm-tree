@@ -1,4 +1,4 @@
-#include "./std_file.h"
+#include "std_file.h"
 
 namespace LSMT {
 bool StdFile::open(const std::string &filename, bool create) {

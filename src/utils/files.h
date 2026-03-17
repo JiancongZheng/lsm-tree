@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "./cursor.h"
-#include "./std_file.h"
+#include "cursor.h"
+#include "std_file.h"
 
 namespace LSMT {
 class Cursor;

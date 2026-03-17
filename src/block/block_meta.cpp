@@ -1,6 +1,6 @@
 #include <stdexcept>
 
-#include "./block_meta.h"
+#include "block_meta.h"
 
 namespace LSMT {
 BlockMeta::BlockMeta() : offset(0), fkey(""), lkey("") { }

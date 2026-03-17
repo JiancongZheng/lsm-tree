@@ -6,11 +6,11 @@
 #include <string>
 #include <vector>
 
-#include "../block/block.h"
-#include "../block/block_cache.h"
-#include "../block/block_meta.h"
-#include "../utils/bloom_filter.h"
-#include "../utils/files.h"
+#include "block/block.h"
+#include "block/block_cache.h"
+#include "block/block_meta.h"
+#include "utils/bloom_filter.h"
+#include "utils/files.h"
 
 namespace LSMT {
 class SST;
@@ -40,5 +40,4 @@ private:
     uint64_t min_trx_id;
     uint64_t max_trx_id;
 };
-
 } // LOG STRUCTURED MERGE TREE

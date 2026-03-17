@@ -8,11 +8,11 @@
 #include <vector>
 #include <stdexcept>
 
-#include "../block/block.h"
-#include "../block/block_cache.h"
-#include "../block/block_meta.h"
-#include "../utils/bloom_filter.h"
-#include "../utils/files.h"
+#include "block/block.h"
+#include "block/block_cache.h"
+#include "block/block_meta.h"
+#include "utils/bloom_filter.h"
+#include "utils/files.h"
 
 namespace LSMT {
 /**

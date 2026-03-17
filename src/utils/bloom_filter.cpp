@@ -1,4 +1,4 @@
-#include "./bloom_filter.h"
+#include "bloom_filter.h"
 
 namespace LSMT {
 BloomFilter::BloomFilter() { }

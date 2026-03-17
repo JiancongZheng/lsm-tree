@@ -1,5 +1,5 @@
-#include "./cursor.h"
-#include "./files.h"
+#include "cursor.h"
+#include "files.h"
 
 namespace LSMT {
 Cursor::Cursor(FileObj* file_obj, size_t offset) : file_obj(file_obj), offset(offset) { }

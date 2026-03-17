@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "memtable_iterator.h"
-#include "../skiplist/skiplist.h"
+#include "skiplist/skiplist.h"
 
 namespace LSMT {
 class MemTable {

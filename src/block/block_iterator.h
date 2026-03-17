@@ -7,7 +7,7 @@
 #include <string>
 #include <stdexcept>
 
-#include "../iterator/iterator.h"
+#include "iterator/iterator.h"
 
 namespace LSMT {
 class Block;

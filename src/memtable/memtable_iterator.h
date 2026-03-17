@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-#include "../iterator/iterator.h"
+#include "iterator/iterator.h"
 
 namespace LSMT {
 class MemtableIterator : public BaseIterator {

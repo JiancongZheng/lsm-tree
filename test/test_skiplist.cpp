@@ -3,7 +3,7 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#include "../src/skiplist/skiplist.h"
+#include "skiplist/skiplist.h"
 
 using namespace ::LSMT;
 

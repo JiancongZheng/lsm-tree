@@ -3,10 +3,9 @@
 #include <filesystem>
 #include <random>
 
-#include "../src/utils/bloom_filter.h"
-#include "../src/utils/files.h"
-#include "../src/config/config.h"
-
+#include "config/config.h"
+#include "utils/bloom_filter.h"
+#include "utils/files.h"
 
 using namespace ::LSMT;
 
