@@ -1,12 +1,17 @@
 #include "sst.h"
 #include "sst_builder.h"
+#include "config/config.h"
 
 namespace LSMT {
 
-SSTBuilder::SSTBuilder(size_t block_size, bool has_bloom) : block_size(block_size) {
+SSTBuilder::SSTBuilder(size_t block_size, bool has_bloom) : block(block_size) {
     if (has_bloom) {
-        bloom_filter = std::make_shared<BloomFilter>(1000, 0.1); // TODO 利用TomlConfig配置
+        bloom_filter = std::make_shared<BloomFilter>(
+            TomlConfig::get_instance().get_bloom_filter_expected_elements(),
+            TomlConfig::get_instance().get_bloom_filter_false_positive_rate()
+        );
     }
+    block_size = block_size;
     min_trx_id = UINT64_MAX;
     max_trx_id = 0;
 }
@@ -53,6 +58,10 @@ std::shared_ptr<SST> SSTBuilder::build(size_t sst_id, const std::string &path, s
         finish_block();
     }
 
+    if (meta_entries.empty()) {
+        throw std::runtime_error("Cannot Build an Empty SST");
+    }
+
     // 获取Meta Section编码和偏移量
     std::vector<uint8_t> meta_section_data;
     BlockMeta::encode_meta(meta_entries, meta_section_data);
@@ -64,43 +73,54 @@ std::shared_ptr<SST> SSTBuilder::build(size_t sst_id, const std::string &path, s
         bloom_filter_data = bloom_filter->encode();
     }
     uint32_t bloom_filter_offset = data.size() + meta_section_data.size();
+    
+    // 依次写入DataSection MetaSection BloomFilter ExtraInformation
+    size_t write_offset = 0;
+    FileObj file_obj = FileObj::create_and_write(path, {});
+    if (!data.empty() && !file_obj.write(write_offset, data)) {
+        throw std::runtime_error("Failed To Write Block Section in " + path);
+    }
+    write_offset += data.size();
 
-    std::vector<uint8_t> file_content(data.size() + meta_section_data.size() + bloom_filter_data.size() 
-        + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint64_t) + sizeof(uint64_t));
-    auto write_position = file_content.data();
+    if (!meta_section_data.empty() && !file_obj.write(write_offset, meta_section_data)) {
+        throw std::runtime_error("Failed To Write Meta Section in " + path);
+    }
+    write_offset += meta_section_data.size();
 
-    // 文件内容编码 Block Section
-    memcpy(write_position, data.data(), data.size() * sizeof(uint8_t));
-    write_position += data.size() + sizeof(uint8_t);
+    if (!bloom_filter_data.empty() && !file_obj.write(write_offset, bloom_filter_data)) {
+        throw std::runtime_error("Failed To Write Bloom Filter in " + path);
+    }
+    write_offset += bloom_filter_data.size();
 
-    // 文件内容编码 Meta Section
-    memcpy(write_position, meta_section_data.data(), meta_section_data.size() * sizeof(uint8_t));
-    write_position += meta_section_data.size() * sizeof(uint8_t);
+    if (!file_obj.write_uint32(write_offset, meta_section_offset)) {
+        throw std::runtime_error("Failed To Write Meta Offset in " + path);
+    }
+    write_offset += sizeof(uint32_t);
 
-    // 文件内容编码 Bloom Filter
-    memcpy(write_position, bloom_filter_data.data(), bloom_filter_data.size() * sizeof(uint8_t));
-    write_position += bloom_filter_data.size() * sizeof(uint8_t);
+    if (!file_obj.write_uint32(write_offset, bloom_filter_offset)) {
+        throw std::runtime_error("Failed To Write Bloom Offset in " + path);
+    }
+    write_offset += sizeof(uint32_t);
 
-    // 文件内容编码 Extra Information
-    memcpy(write_position, &meta_section_offset, sizeof(uint32_t));
-    write_position += sizeof(uint32_t);
-    memcpy(write_position, &bloom_filter_offset, sizeof(uint32_t));
-    write_position += sizeof(uint32_t);
-    memcpy(write_position, &min_trx_id, sizeof(uint64_t));
-    write_position += sizeof(uint64_t);
-    memcpy(write_position, &max_trx_id, sizeof(uint64_t));
+    if (!file_obj.write_uint64(write_offset, min_trx_id)) {
+        throw std::runtime_error("Failed To Write Min Transaction Id in " + path);
+    }
+    write_offset += sizeof(uint64_t);
 
-    // 使用file_content.insert()方式
-    // file_content.insert(file_content.end(), reinterpret_cast<const uint8_t *>(&min_trx_id), reinterpret_cast<const uint8_t *>(&min_trx_id) + sizeof(uint64_t));
-    // file_content.insert(file_content.end(), reinterpret_cast<const uint8_t *>(&max_trx_id), reinterpret_cast<const uint8_t *>(&max_trx_id) + sizeof(uint64_t));
+    if (!file_obj.write_uint64(write_offset, max_trx_id)) {
+        throw std::runtime_error("Failed To Write Max Transaction Id in " + path);
+    }
+    write_offset += sizeof(uint64_t);
 
-    FileObj file_obj = FileObj::create_and_write(path, file_content);
+    if (!file_obj.sync()) {
+        throw std::runtime_error("Failed To Sync File " + path);
+    }
 
     auto result = std::make_shared<SST>();
 
     result->sst_id = sst_id;
     result->file_obj = std::move(file_obj);
-    result->meta_entries = std::move(meta_entries);
+    result->meta_entries = meta_entries;
     result->bloom_filter_offset = bloom_filter_offset;
     result->meta_section_offset = meta_section_offset;
     result->fkey = meta_entries.front().fkey;

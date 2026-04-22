@@ -39,5 +39,9 @@ file(GLOB BLOCK_SRCS ${SOURCE_DIR}/block/*.cpp)
 add_library(block SHARED ${BLOCK_SRCS})
 target_link_libraries(block PUBLIC iterator)
 
+file(GLOB SST_SRCS ${SOURCE_DIR}/sst/*.cpp)
+add_library(sst SHARED ${SST_SRCS})
+target_link_libraries(sst PUBLIC block utils config iterator)
+
 # 链接单元测试文件
 add_subdirectory(test)
