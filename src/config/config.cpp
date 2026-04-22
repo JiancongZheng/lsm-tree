@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <toml++/toml.hpp>
 
 #include "config.h"
@@ -86,8 +87,13 @@ void TomlConfig::set_default_value() {
 
 const TomlConfig &TomlConfig::get_instance(const std::string &file_path) {
     static const TomlConfig instance([](const std::string &path) -> std::string {
-        std::ifstream file(path);
-        return file.good() ? path : std::string("config.toml");
+        if (const char *env_path = std::getenv("LSMT_CONFIG"); env_path != nullptr) {
+            std::filesystem::path config_path(env_path);
+            if (std::filesystem::exists(config_path)) {
+                return std::filesystem::absolute(config_path).string();
+            }
+        }
+        return std::filesystem::absolute(path).string();
     }(file_path));
     return instance;
 }

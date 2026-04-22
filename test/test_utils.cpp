@@ -12,13 +12,13 @@ using namespace ::LSMT;
 class FileTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        if (!std::filesystem::exists("file_test")) {
-            std::filesystem::create_directory("file_test");
+        if (!std::filesystem::exists("test_dir")) {
+            std::filesystem::create_directory("test_dir");
         }
     }
 
     void TearDown() override {
-        // std::filesystem::remove_all("file_test");
+        std::filesystem::remove_all("test_dir");
     }
 
     std::vector<uint8_t> generate_random_data(size_t size)
@@ -33,7 +33,7 @@ protected:
 };
 
 TEST_F(FileTest, BasicReadAndWrite) {
-    const std::string path = "file_test/basic.dat";
+    const std::string path = "test_dir/basic.dat";
     std::vector<uint8_t> data = {1, 2, 3, 4, 5, 6};
 
     auto raw_file = FileObj::create_and_write(path, data);
@@ -47,7 +47,7 @@ TEST_F(FileTest, BasicReadAndWrite) {
 }
 
 TEST_F(FileTest, LargeReadAndWrite) {
-    const std::string path = "file_test/large.dat";
+    const std::string path = "test_dir/large.dat";
     const size_t data_size = 1024 * 1024;
     auto data = generate_random_data(data_size);
 
@@ -64,7 +64,7 @@ TEST_F(FileTest, LargeReadAndWrite) {
 }
 
 TEST_F(FileTest, PartialRead) {
-    const std::string path = "file_test/partial.dat";
+    const std::string path = "test_dir/partial.dat";
     std::vector<uint8_t> data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
     auto raw_file = FileObj::create_and_write(path, data);
@@ -88,7 +88,7 @@ TEST_F(FileTest, PartialRead) {
 
 // 测试错误情况
 TEST_F(FileTest, ErrorCases) {
-    const std::string path = "file_test/error.dat";
+    const std::string path = "test_dir/error.dat";
     std::vector<uint8_t> data = {1, 2, 3};
 
     auto raw_file = FileObj::create_and_write(path, data);
