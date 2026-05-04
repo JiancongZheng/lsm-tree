@@ -17,9 +17,16 @@ set(SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
 
 include_directories(${SOURCE_DIR})
 
+file(GLOB ITERATOR_SRCS ${SOURCE_DIR}/iterator/*.cpp)
+add_library(iterator SHARED ${ITERATOR_SRCS})
+
 file(GLOB SKIPLIST_SRCS ${SOURCE_DIR}/skiplist/*.cpp)
 add_library(skiplist SHARED ${SKIPLIST_SRCS})
 target_link_libraries(skiplist PUBLIC iterator)
+
+file(GLOB MEMTABLE_SRCS ${SOURCE_DIR}/memtable/*.cpp)
+add_library(memtable SHARED ${MEMTABLE_SRCS})
+target_link_libraries(memtable PUBLIC skiplist)
 
 # 链接单元测试文件
 add_subdirectory(test)
