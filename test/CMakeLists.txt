@@ -11,3 +11,6 @@ target_link_libraries(test_skiplist PRIVATE ${TEST_LIBS} skiplist)
 
 add_executable(test_memtable ${TEST_DIR}/test_memtable.cpp)
 target_link_libraries(test_memtable PRIVATE ${TEST_LIBS} memtable skiplist)
+
+add_executable(test_block ${TEST_DIR}/test_block.cpp)
+target_link_libraries(test_block PRIVATE ${TEST_LIBS} block)
