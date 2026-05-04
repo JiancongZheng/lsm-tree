@@ -17,6 +17,13 @@ set(SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
 
 include_directories(${SOURCE_DIR})
 
+file(GLOB UTILS_SRCS ${SOURCE_DIR}/utils/*.cpp)
+add_library(utils SHARED ${UTILS_SRCS})
+
+file(GLOB CONFIG_SRCS ${SOURCE_DIR}/config/*.cpp)
+add_library(config SHARED ${CONFIG_SRCS})
+target_link_libraries(config PRIVATE tomlplusplus::tomlplusplus)
+
 file(GLOB ITERATOR_SRCS ${SOURCE_DIR}/iterator/*.cpp)
 add_library(iterator SHARED ${ITERATOR_SRCS})
 
