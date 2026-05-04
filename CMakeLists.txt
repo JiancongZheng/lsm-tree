@@ -28,5 +28,9 @@ file(GLOB MEMTABLE_SRCS ${SOURCE_DIR}/memtable/*.cpp)
 add_library(memtable SHARED ${MEMTABLE_SRCS})
 target_link_libraries(memtable PUBLIC skiplist)
 
+file(GLOB BLOCK_SRCS ${SOURCE_DIR}/block/*.cpp)
+add_library(block SHARED ${BLOCK_SRCS})
+target_link_libraries(block PUBLIC iterator)
+
 # 链接单元测试文件
 add_subdirectory(test)
