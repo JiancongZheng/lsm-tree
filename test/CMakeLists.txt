@@ -18,3 +18,5 @@ target_link_libraries(test_block PRIVATE ${TEST_LIBS} block)
 add_executable(test_utils ${TEST_DIR}/test_utils.cpp)
 target_link_libraries(test_utils PRIVATE ${TEST_LIBS} utils tomlplusplus::tomlplusplus)
 
+add_executable(test_sst ${TEST_DIR}/test_sst.cpp)
+target_link_libraries(test_sst PRIVATE ${TEST_LIBS} sst block)
