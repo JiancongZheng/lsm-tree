@@ -26,7 +26,7 @@ bool TomlConfig::load_config_file() {
 
         auto lsmt_config = config["lsmt"];
         lsm_sum_memtable_size = lsmt_config.at_path("LSM_SUM_MEMTABLE_SIZE").value<uint64_t>().value();
-        lsm_per_memtable_size = lsmt_config.at_path("LSM_PER_MEMTABLE_PATH").value<uint64_t>().value();
+        lsm_per_memtable_size = lsmt_config.at_path("LSM_PER_MEMTABLE_SIZE").value<uint64_t>().value();
         lsm_sst_level_ratio   = lsmt_config.at_path("LSM_SST_LEVEL_RATIO").value<int>().value();
         lsm_block_size        = lsmt_config.at_path("LSM_BLOCK_SIZE").value<int>().value();
         lsm_block_cache_size  = lsmt_config.at_path("LSM_BLOCK_CACHE_SIZE").value<int>().value();
@@ -48,7 +48,7 @@ bool TomlConfig::save_config_file() {
         toml::table config {
             {"lsmt", toml::table {
                 {"LSM_SUM_MEMTABLE_SIZE", lsm_sum_memtable_size},
-                {"LSM_PER_MEMTABLE_SZIE", lsm_per_memtable_size},
+                {"LSM_PER_MEMTABLE_SIZE", lsm_per_memtable_size},
                 {"LSM_SST_LEVEL_RATIO",   lsm_sst_level_ratio},
                 {"LSM_BLOCK_SIZE",        lsm_block_size},
                 {"LSM_BLOCK_CACHE_SIZE",  lsm_block_cache_size},
