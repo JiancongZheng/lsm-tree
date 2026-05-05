@@ -10,12 +10,12 @@
 
 namespace LSMT {
 enum class IteratorType {
+    HeapIterator,
     SkiplistIterator,
     MemtableIterator,
-    HeapIterator,
-    SSTableIterator,
-    ConcactIterator,
     BlockIterator,
+    SSTableIterator,
+    ConcatIterator,
     LevelIterator,
     TwoMergeIterator,
 };
@@ -100,13 +100,5 @@ private:
     std::priority_queue<Item, std::vector<Item>, std::greater<Item>> pqueue;
     mutable std::shared_ptr<IteratorItem> current;
     uint64_t max_trx_id = 0;
-};
-
-class TwoMergeIterator : public BaseIterator {
-
-};
-
-class LevelIterator : public BaseIterator {
-
 };
 } // LOG STRUCTURED MERGE TREE

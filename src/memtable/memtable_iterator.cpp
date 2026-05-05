@@ -8,12 +8,12 @@ MemtableIterator::MemtableIterator(std::vector<Item> items, uint64_t max_trx_id)
     while (!check_item_valid()) { skip_invld_items(); }
 }
 
-MemtableIterator::IteratorItem* MemtableIterator::operator->() const {
+BaseIterator::IteratorItem* MemtableIterator::operator->() const {
     update_current();
     return current.get();
 }
 
-MemtableIterator::IteratorItem MemtableIterator::operator*() const {
+BaseIterator::IteratorItem MemtableIterator::operator*() const {
     update_current();
     return std::make_pair(pqueue.top().key, pqueue.top().val);
 }

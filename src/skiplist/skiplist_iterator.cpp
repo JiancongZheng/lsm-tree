@@ -6,7 +6,7 @@ SkipListIterator::SkipListIterator() : current(nullptr), rd_lock(nullptr) { }
 
 SkipListIterator::SkipListIterator(std::shared_ptr<SkipListNode> node): current(node) { }
 
-SkipListIterator::IteratorItem SkipListIterator::operator*() const {
+BaseIterator::IteratorItem SkipListIterator::operator*() const {
     if (!current) { 
         throw std::runtime_error("SkipList Iterator Error: dereferencing end iterator");
     }

@@ -34,12 +34,12 @@ SSTIterator::SSTIterator(std::shared_ptr<SST> sst, const std::string &key, uint6
     }
 }
 
-SSTIterator::IteratorItem* SSTIterator::operator->() const {
+BaseIterator::IteratorItem* SSTIterator::operator->() const {
     update_current();
     return &(cached_value.value());
 }
     
-SSTIterator::IteratorItem SSTIterator::operator*() const {
+BaseIterator::IteratorItem SSTIterator::operator*() const {
     update_current();
     return cached_value.value();
 }

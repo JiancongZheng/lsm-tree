@@ -71,9 +71,6 @@ private:
     std::shared_ptr<BlockCache> block_cache;
     uint64_t min_trx_id;
     uint64_t max_trx_id;
-
-    // uint8_t storage_mode = 0;  // 0=inline 1=Wisckey
-    // std::shared_ptr<VLog> vlog;
 };
 
 } // LOG STRUCTURED MERGE TREE
