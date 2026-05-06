@@ -139,7 +139,7 @@ SSTIterator SST::end() {
 }
 
 std::optional<std::pair<SSTIterator, SSTIterator>> 
-SST::iters_monotony_predicate(std::function<int(const std::string &)> predicate) {
+SST::iters_monotony_predicate(size_t trx_id, std::function<int(const std::string &)> predicate) {
     std::optional<SSTIterator> final_beg;
     std::optional<SSTIterator> final_end;
 
@@ -152,15 +152,15 @@ SST::iters_monotony_predicate(std::function<int(const std::string &)> predicate)
         }
 
         auto block = get_block(block_id);
-        auto result = block->get_monotony_predicate_iters(max_trx_id, predicate);
+        auto result = block->get_monotony_predicate_iters(trx_id, predicate);
         if (result.has_value()) {
             auto [beg, end] = result.value();
             if (final_beg.has_value() == false) {
-                final_beg = SSTIterator(shared_from_this(), max_trx_id);
+                final_beg = SSTIterator(shared_from_this(), trx_id);
                 final_beg->block_id = block_id;
                 final_beg->block_it = beg;                
             }
-            final_end = SSTIterator(shared_from_this(), max_trx_id);
+            final_end = SSTIterator(shared_from_this(), trx_id);
             final_end->block_id = block_id;
             final_end->block_it = end;
             if (final_end->is_end() && final_end->block_id == get_block_number()) {

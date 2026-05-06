@@ -106,7 +106,7 @@ MemTable::get(const std::vector<std::string> &keys, uint64_t trx_id) {
     return items;
 }
 
-MemtableIterator MemTable::begin(uint64_t trx_id) {
+HeapIterator MemTable::begin(uint64_t trx_id) {
     std::shared_lock<std::shared_mutex> act_lock(active_mutex);
     std::shared_lock<std::shared_mutex> frz_lock(frozen_mutex);
     std::vector<Item> items;
@@ -125,13 +125,13 @@ MemtableIterator MemTable::begin(uint64_t trx_id) {
         }
     }
 
-    return MemtableIterator(items, trx_id);
+    return HeapIterator(items, trx_id);
 }
 
-MemtableIterator MemTable::end() {
+HeapIterator MemTable::end() {
     std::shared_lock<std::shared_mutex> act_lock(active_mutex);
     std::shared_lock<std::shared_mutex> frz_lock(frozen_mutex);
-    return MemtableIterator();
+    return HeapIterator();
 }
 
 void MemTable::clear() {
@@ -142,7 +142,7 @@ void MemTable::clear() {
     frozen_bytes = 0;
 }
 
-MemtableIterator MemTable::iters_preffix(const std::string &preffix, uint64_t trx_id) {
+HeapIterator MemTable::iters_preffix(const std::string &preffix, uint64_t trx_id) {
     std::shared_lock<std::shared_mutex> act_lock(active_mutex);
     std::shared_lock<std::shared_mutex> frz_lock(frozen_mutex);
     std::vector<Item> items;
@@ -169,11 +169,11 @@ MemtableIterator MemTable::iters_preffix(const std::string &preffix, uint64_t tr
             items.emplace_back(it.get_key(), it.get_val(), idx + 1, 0, it.get_trx_id());
         }
     }
-    return MemtableIterator(items, trx_id);
+    return HeapIterator(items, trx_id);
 }
 
 
-std::optional<std::pair<MemtableIterator, MemtableIterator>> 
+std::optional<std::pair<HeapIterator, HeapIterator>>
 MemTable::iters_monotony_predicate(uint64_t trx_id, std::function<int(const std::string&)> predicate) {
     std::shared_lock<std::shared_mutex> act_lock(active_mutex);
     std::shared_lock<std::shared_mutex> frz_lock(frozen_mutex);
@@ -212,7 +212,7 @@ MemTable::iters_monotony_predicate(uint64_t trx_id, std::function<int(const std:
     if (items.empty()) {
         return std::nullopt;
     } else {
-        return std::make_pair(MemtableIterator(items,trx_id), MemtableIterator());
+        return std::make_pair(HeapIterator(items,trx_id), HeapIterator());
     }
 }
 

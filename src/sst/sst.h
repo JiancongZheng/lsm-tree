@@ -55,7 +55,7 @@ public:
     SSTIterator end();
 
     std::optional<std::pair<SSTIterator, SSTIterator>> 
-    iters_monotony_predicate(std::function<int(const std::string &)> predicate);
+    iters_monotony_predicate(size_t trx_id, std::function<int(const std::string &)> predicate);
 
     std::pair<uint64_t, uint64_t> get_trx_id_range() const;
 

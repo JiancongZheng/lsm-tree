@@ -163,7 +163,7 @@ TEST_F(SSTTest, LargeSSTPredicate) {
 
     auto sst = builder.build(1, "test_dir/test_sst5", block_cache);
 
-    auto result = sst->iters_monotony_predicate([](const std::string &key) {
+    auto result = sst->iters_monotony_predicate(0, [](const std::string &key) {
         return key.compare("key300") < 0 ? 1 : (key.compare("key500") > 0 ? -1 : 0);
     });
 

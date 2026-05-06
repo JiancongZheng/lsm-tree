@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "memtable_iterator.h"
+#include "iterator/iterator.h"
 #include "skiplist/skiplist.h"
 #include "sst/sst.h"
 
@@ -35,18 +35,18 @@ public:
     std::vector<std::pair<std::string, std::optional<std::pair<std::string, uint64_t>>>>
     get(const std::vector<std::string> &keys, uint64_t trx_id);
 
-    MemtableIterator begin(uint64_t trx_id);
+    HeapIterator begin(uint64_t trx_id);
 
-    MemtableIterator end();
+    HeapIterator end();
 
     void clear();
 
     std::shared_ptr<SST> flush(SSTBuilder &builder, std::string &sst_path, size_t sst_index, 
         std::vector<uint64_t> &trx_ids, std::shared_ptr<BlockCache> block_cache);
     
-    MemtableIterator iters_preffix(const std::string &preffix, uint64_t trx_id);
+    HeapIterator iters_preffix(const std::string &preffix, uint64_t trx_id);
 
-    std::optional<std::pair<MemtableIterator, MemtableIterator>> 
+    std::optional<std::pair<HeapIterator, HeapIterator>> 
     iters_monotony_predicate(uint64_t trx_id, std::function<int(const std::string&)> predicate);
 
     size_t get_total_size();

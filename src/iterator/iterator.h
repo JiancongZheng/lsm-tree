@@ -10,13 +10,12 @@
 
 namespace LSMT {
 enum class IteratorType {
-    HeapIterator,
-    SkiplistIterator,
-    MemtableIterator,
     BlockIterator,
-    SSTableIterator,
     ConcatIterator,
+    HeapIterator,
     LevelIterator,
+    SkiplistIterator,
+    SSTableIterator,
     TwoMergeIterator,
 };
 

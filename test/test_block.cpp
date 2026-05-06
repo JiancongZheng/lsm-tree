@@ -12,51 +12,51 @@ using namespace ::LSMT;
 
 class BlockTest : public ::testing::Test {
 protected:
-std::vector<uint8_t> GetEncodedBlock() {
-    std::vector<uint8_t> encoded = {
-        // Data Section
-        5, 0,                              // key_len = 5
-        'a', 'p', 'p', 'l', 'e',           // key
-        3, 0,                              // value_len = 3
-        'r', 'e', 'd',                     // value
-        1, 0, 0, 0, 0, 0, 0, 0,            // tranc_id = 1
+    std::vector<uint8_t> GetEncodedBlock() {
+        std::vector<uint8_t> encoded = {
+            // Data Section
+            5, 0,                              // key_len = 5
+            'a', 'p', 'p', 'l', 'e',           // key
+            3, 0,                              // value_len = 3
+            'r', 'e', 'd',                     // value
+            1, 0, 0, 0, 0, 0, 0, 0,            // tranc_id = 1
 
-        6, 0,                              // key_len = 6
-        'b', 'a', 'n', 'a', 'n', 'a',      // key
-        6, 0,                              // value_len = 6
-        'y', 'e', 'l', 'l', 'o', 'w',      // value
-        2, 0, 0, 0, 0, 0, 0, 0,            // tranc_id = 2
+            6, 0,                              // key_len = 6
+            'b', 'a', 'n', 'a', 'n', 'a',      // key
+            6, 0,                              // value_len = 6
+            'y', 'e', 'l', 'l', 'o', 'w',      // value
+            2, 0, 0, 0, 0, 0, 0, 0,            // tranc_id = 2
 
-        6, 0,                              // key_len = 6
-        'o', 'r', 'a', 'n', 'g', 'e',      // key
-        7, 0,                              // value_len = 6
-        'o', 'r', 'a', 'n', 'g', 'e', '3', // value
-        3, 0, 0, 0, 0, 0, 0, 0,            // tranc_id = 3
+            6, 0,                              // key_len = 6
+            'o', 'r', 'a', 'n', 'g', 'e',      // key
+            7, 0,                              // value_len = 6
+            'o', 'r', 'a', 'n', 'g', 'e', '3', // value
+            3, 0, 0, 0, 0, 0, 0, 0,            // tranc_id = 3
 
-        6, 0,                              // key_len = 6
-        'o', 'r', 'a', 'n', 'g', 'e',      // key
-        7, 0,                              // value_len = 6
-        'o', 'r', 'a', 'n', 'g', 'e', '2', // value
-        2, 0, 0, 0, 0, 0, 0, 0,            // tranc_id = 2
+            6, 0,                              // key_len = 6
+            'o', 'r', 'a', 'n', 'g', 'e',      // key
+            7, 0,                              // value_len = 6
+            'o', 'r', 'a', 'n', 'g', 'e', '2', // value
+            2, 0, 0, 0, 0, 0, 0, 0,            // tranc_id = 2
 
-        6, 0,                              // key_len = 6
-        'o', 'r', 'a', 'n', 'g', 'e',      // key
-        7, 0,                              // value_len = 6
-        'o', 'r', 'a', 'n', 'g', 'e', '1', // value
-        1, 0, 0, 0, 0, 0, 0, 0,            // tranc_id = 1
-        
-        // Offset Section
-        0,  0,  // offset[0] = 0
-        20, 0,  // offset[1] = 20
-        44, 0,  // offset[2] = 44
-        69, 0,  // offset[3] = 69
-        94, 0,  // offset[4] = 94
+            6, 0,                              // key_len = 6
+            'o', 'r', 'a', 'n', 'g', 'e',      // key
+            7, 0,                              // value_len = 6
+            'o', 'r', 'a', 'n', 'g', 'e', '1', // value
+            1, 0, 0, 0, 0, 0, 0, 0,            // tranc_id = 1
+            
+            // Offset Section
+            0,  0,  // offset[0] = 0
+            20, 0,  // offset[1] = 20
+            44, 0,  // offset[2] = 44
+            69, 0,  // offset[3] = 69
+            94, 0,  // offset[4] = 94
 
-        // Elements Number
-        5, 0,
-    };
-    return encoded;
-}
+            // Elements Number
+            5, 0,
+        };
+        return encoded;
+    }
 };
 
 TEST_F(BlockTest, DecodeTest) {
