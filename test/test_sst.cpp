@@ -12,13 +12,13 @@ class SSTTest : public ::testing::Test
 {
 protected:
     void SetUp() override {
-        if (std::filesystem::exists("test_dir") == false) {
-            std::filesystem::create_directory("test_dir");
+        if (std::filesystem::exists("test_sst_path") == false) {
+            std::filesystem::create_directory("test_sst_path");
         }
     }
 
     void TearDown() override {
-        std::filesystem::remove_all("test_dir");
+        std::filesystem::remove_all("test_sst_path");
     }
 
     std::shared_ptr<SST> create_test_sst(size_t block_size, size_t num_entries) {
@@ -34,7 +34,7 @@ protected:
             TomlConfig::get_instance().get_lsm_block_cache_size(),
             TomlConfig::get_instance().get_lsm_block_cache_lruk());
 
-        return builder.build(1, "test_dir/test_sst0", block_cache);
+        return builder.build(1, "test_sst_path/test_sst0", block_cache);
     }
 };
 
@@ -48,7 +48,7 @@ TEST_F(SSTTest, BasicWriteAndRead) {
     builder.add("key2", "value2", 0);
     builder.add("key3", "value3", 0);
 
-    auto sst = builder.build(1, "test_dir/test_sst1", block_cache);
+    auto sst = builder.build(1, "test_sst_path/test_sst1", block_cache);
 
     EXPECT_EQ(sst->get_fkey(), "key1");
     EXPECT_EQ(sst->get_lkey(), "key3");
@@ -72,7 +72,7 @@ TEST_F(SSTTest, BlockSplitting) {
         builder.add(key, val, 0);
     }
 
-    auto sst = builder.build(1, "test_dir/test_sst2", block_cache);
+    auto sst = builder.build(1, "test_sst_path/test_sst2", block_cache);
 
     for (size_t i = 0; i < sst->get_block_number(); i++) {
         auto block = sst->get_block(i);
@@ -97,7 +97,7 @@ TEST_F(SSTTest, EmptySST) {
     auto block_cache = std::make_shared<BlockCache>(
         TomlConfig::get_instance().get_lsm_block_cache_size(),
         TomlConfig::get_instance().get_lsm_block_cache_lruk());
-    EXPECT_THROW(builder.build(1, "test_dir/test_sst3", block_cache), std::runtime_error);
+    EXPECT_THROW(builder.build(1, "test_sst_path/test_sst3", block_cache), std::runtime_error);
 }
 
 TEST_F(SSTTest, ReopenSST) {
@@ -106,7 +106,7 @@ TEST_F(SSTTest, ReopenSST) {
         TomlConfig::get_instance().get_lsm_block_cache_size(),
         TomlConfig::get_instance().get_lsm_block_cache_lruk());
 
-    FileObj file = FileObj::open("test_dir/test_sst0", false);
+    FileObj file = FileObj::open("test_sst_path/test_sst0", false);
     auto new_sst = SST::open(1, std::move(file), block_cache);
 
     EXPECT_EQ(sst->get_fkey(), new_sst->get_fkey());
@@ -128,7 +128,7 @@ TEST_F(SSTTest, LargeSST) {
         builder.add(key, val, 0);
     }
 
-    auto sst = builder.build(1, "test_dir/test_sst4", block_cache);
+    auto sst = builder.build(1, "test_sst_path/test_sst4", block_cache);
 
     EXPECT_GT(sst->get_block_number(), 1);
     EXPECT_EQ(sst->get_fkey(), "key000");
@@ -161,7 +161,7 @@ TEST_F(SSTTest, LargeSSTPredicate) {
         builder.add(key, val, 0);
     }
 
-    auto sst = builder.build(1, "test_dir/test_sst5", block_cache);
+    auto sst = builder.build(1, "test_sst_path/test_sst5", block_cache);
 
     auto result = sst->iters_monotony_predicate(0, [](const std::string &key) {
         return key.compare("key300") < 0 ? 1 : (key.compare("key500") > 0 ? -1 : 0);
