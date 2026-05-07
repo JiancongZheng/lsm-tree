@@ -42,7 +42,7 @@ public:
     void clear();
 
     std::shared_ptr<SST> flush(SSTBuilder &builder, std::string &sst_path, size_t sst_index, 
-        std::vector<uint64_t> &trx_ids, std::shared_ptr<BlockCache> block_cache);
+    std::vector<uint64_t> &trx_ids, std::shared_ptr<BlockCache> block_cache);
     
     HeapIterator iters_preffix(const std::string &preffix, uint64_t trx_id);
 
@@ -66,7 +66,7 @@ private:
 
 private:
     std::shared_ptr<SkipList> active_table;
-    std::vector<std::shared_ptr<SkipList>> frozen_table;
+    std::vector<std::shared_ptr<SkipList>> frozen_tables;
     size_t frozen_bytes;
     std::shared_mutex active_mutex;
     std::shared_mutex frozen_mutex;

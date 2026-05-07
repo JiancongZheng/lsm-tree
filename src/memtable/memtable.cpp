@@ -1,4 +1,7 @@
 #include "memtable.h"
+#include "config/config.h"
+#include "sst/sst.h"
+#include "sst/sst_builder.h"
 
 namespace LSMT {
 MemTable::MemTable() : frozen_bytes(0) {
@@ -6,41 +9,41 @@ MemTable::MemTable() : frozen_bytes(0) {
 }
 
 void MemTable::put(const std::string &key, const std::string &val, uint64_t trx_id) {
-    std::unique_lock<std::shared_mutex> act_lock(active_mutex);
+    std::unique_lock<std::shared_mutex> active_lock(active_mutex);
     active_table->put(key, val, trx_id);
-    if (active_table->get_size() > 10000) {
-        std::unique_lock<std::shared_mutex> frz_lock(frozen_mutex);
+    if (active_table->get_size() > TomlConfig::get_instance().get_lsm_per_memtable_size()) {
+        std::unique_lock<std::shared_mutex> frozen_lock(frozen_mutex);
         freeze_active_table();
     }
 }
 
 void MemTable::put(const std::vector<std::pair<std::string, std::string>> &kv_pairs, uint64_t trx_id) {
-    std::unique_lock<std::shared_mutex> act_lock(active_mutex);
+    std::unique_lock<std::shared_mutex> active_lock(active_mutex);
     for (const auto& [key, val] : kv_pairs) {
         active_table->put(key, val, trx_id);
     }
-    if (active_table->get_size() > 10000) {
-        std::unique_lock<std::shared_mutex> frz_lock(frozen_mutex);
+    if (active_table->get_size() > TomlConfig::get_instance().get_lsm_per_memtable_size()) {
+        std::unique_lock<std::shared_mutex> frozen_lock(frozen_mutex);
         freeze_active_table();
     }
 }
 
 void MemTable::remove(const std::string &key, uint64_t trx_id) {
-    std::unique_lock<std::shared_mutex> act_lock(active_mutex);
+    std::unique_lock<std::shared_mutex> active_lock(active_mutex);
     active_table->put(key, "", trx_id);
-    if (active_table->get_size() > 10000) {
-        std::unique_lock<std::shared_mutex> frz_lock(frozen_mutex);
+    if (active_table->get_size() > TomlConfig::get_instance().get_lsm_per_memtable_size()) {
+        std::unique_lock<std::shared_mutex> frozen_lock(frozen_mutex);
         freeze_active_table();
     }
 }
 
 void MemTable::remove(const std::vector<std::string> &keys, uint64_t trx_id) {
-    std::unique_lock<std::shared_mutex> act_lock(active_mutex);
+    std::unique_lock<std::shared_mutex> active_lock(active_mutex);
     for (auto &key : keys) {
         active_table->put(key, "", trx_id);
     }
-    if (active_table->get_size() > 10000) {
-        std::unique_lock<std::shared_mutex> frz_lock(frozen_mutex);
+    if (active_table->get_size() > TomlConfig::get_instance().get_lsm_per_memtable_size()) {
+        std::unique_lock<std::shared_mutex> frozen_lock(frozen_mutex);
         freeze_active_table();
     }
 }
@@ -51,7 +54,7 @@ bool MemTable::get_active(const std::string &key, uint64_t trx_id, SkipListItera
 }
 
 bool MemTable::get_frozen(const std::string &key, uint64_t trx_id, SkipListIterator &it) {
-    for (auto &table : frozen_table) {
+    for (auto &table : frozen_tables) {
         it = table->get(key, trx_id);
         if (it.is_vld()) { return true; }
     }
@@ -59,14 +62,16 @@ bool MemTable::get_frozen(const std::string &key, uint64_t trx_id, SkipListItera
 }
 
 SkipListIterator MemTable::get(const std::string &key, uint64_t trx_id) {
-    std::shared_lock<std::shared_mutex> act_lock(active_mutex);
+    std::shared_lock<std::shared_mutex> active_lock(active_mutex);
     SkipListIterator iterator = SkipListIterator();
 
     if (get_active(key, trx_id, iterator) == true) {
         return iterator;
     }
-    act_lock.unlock();
-    std::shared_lock<std::shared_mutex> frz_lock(frozen_mutex);
+
+    active_lock.unlock();
+    std::shared_lock<std::shared_mutex> frozen_lock(frozen_mutex);
+
     if (get_frozen(key, trx_id, iterator) == true) {
         return iterator;
     }
@@ -77,7 +82,7 @@ std::vector<std::pair<std::string, std::optional<std::pair<std::string, uint64_t
 MemTable::get(const std::vector<std::string> &keys, uint64_t trx_id) {
     std::vector<std::pair<std::string, std::optional<std::pair<std::string, uint64_t>>>> items;
 
-    std::shared_lock<std::shared_mutex> act_lock(active_mutex);
+    std::shared_lock<std::shared_mutex> active_lock(active_mutex);
 
     for (size_t idx = 0; idx < keys.size(); ++idx) {
         auto iterator = SkipListIterator(); 
@@ -91,8 +96,8 @@ MemTable::get(const std::vector<std::string> &keys, uint64_t trx_id) {
         return items;
     }
 
-    act_lock.unlock();
-    std::shared_lock<std::shared_mutex> frz_lock(frozen_mutex);
+    active_lock.unlock();
+    std::shared_lock<std::shared_mutex> frozen_lock(frozen_mutex);
 
     for (size_t idx = 0; idx < keys.size(); ++idx) {
         if (items[idx].second.has_value()) continue;
@@ -107,8 +112,8 @@ MemTable::get(const std::vector<std::string> &keys, uint64_t trx_id) {
 }
 
 HeapIterator MemTable::begin(uint64_t trx_id) {
-    std::shared_lock<std::shared_mutex> act_lock(active_mutex);
-    std::shared_lock<std::shared_mutex> frz_lock(frozen_mutex);
+    std::shared_lock<std::shared_mutex> active_lock(active_mutex);
+    std::shared_lock<std::shared_mutex> frozen_lock(frozen_mutex);
     std::vector<Item> items;
 
     for (auto it = active_table->begin(); it != active_table->end(); ++it) {
@@ -116,8 +121,8 @@ HeapIterator MemTable::begin(uint64_t trx_id) {
             continue;
         items.emplace_back(it.get_key(), it.get_val(), 0, 0, it.get_trx_id());
     }
-    for (size_t idx = 0; idx < frozen_table.size(); ++idx) {
-        auto table = frozen_table[idx];
+    for (size_t idx = 0; idx < frozen_tables.size(); ++idx) {
+        auto table = frozen_tables[idx];
         for (auto it = table->begin(); it != table->end(); ++it) {
             if (trx_id != 0 && it.get_trx_id() > trx_id)
                 continue;
@@ -129,22 +134,45 @@ HeapIterator MemTable::begin(uint64_t trx_id) {
 }
 
 HeapIterator MemTable::end() {
-    std::shared_lock<std::shared_mutex> act_lock(active_mutex);
-    std::shared_lock<std::shared_mutex> frz_lock(frozen_mutex);
+    std::shared_lock<std::shared_mutex> active_lock(active_mutex);
+    std::shared_lock<std::shared_mutex> frozen_lock(frozen_mutex);
     return HeapIterator();
 }
 
 void MemTable::clear() {
-    std::unique_lock<std::shared_mutex> act_lock(active_mutex);
-    std::unique_lock<std::shared_mutex> frz_lock(frozen_mutex);
+    std::shared_lock<std::shared_mutex> active_lock(active_mutex);
+    std::shared_lock<std::shared_mutex> frozen_lock(frozen_mutex);
     active_table->clear();
-    frozen_table.clear();
+    frozen_tables.clear();
     frozen_bytes = 0;
 }
 
+std::shared_ptr<SST> MemTable::flush(SSTBuilder &builder, std::string &sst_path, size_t sst_index, 
+std::vector<uint64_t> &trx_ids, std::shared_ptr<BlockCache> block_cache) {
+    std::unique_lock<std::shared_mutex> frozen_lock(frozen_mutex);
+
+    if (frozen_tables.empty()) {
+        if (active_table->get_size() == 0) {
+            return nullptr;
+        }
+        freeze_active_table();
+    }
+
+    std::shared_ptr<SkipList> table = frozen_tables.back();
+    frozen_tables.pop_back();
+    frozen_bytes -= table->get_size();
+
+    std::vector<std::tuple<std::string, std::string, uint64_t>> data = table->flush();
+    for (auto &[key, val, trx_id] : data) {
+        builder.add(key, val, trx_id);
+    }
+
+    return builder.build(sst_index, sst_path, block_cache);
+}
+
 HeapIterator MemTable::iters_preffix(const std::string &preffix, uint64_t trx_id) {
-    std::shared_lock<std::shared_mutex> act_lock(active_mutex);
-    std::shared_lock<std::shared_mutex> frz_lock(frozen_mutex);
+    std::shared_lock<std::shared_mutex> active_lock(active_mutex);
+    std::shared_lock<std::shared_mutex> frozen_lock(frozen_mutex);
     std::vector<Item> items;
 
     for (auto it = active_table->begin_preffix(preffix); it != active_table->end_preffix(preffix); ++it) {
@@ -157,8 +185,8 @@ HeapIterator MemTable::iters_preffix(const std::string &preffix, uint64_t trx_id
         items.emplace_back(it.get_key(), it.get_val(), 0, 0, it.get_trx_id());
     }
 
-    for (int idx = 0; idx < frozen_table.size(); ++idx) {
-        auto table = frozen_table[idx];
+    for (int idx = 0; idx < frozen_tables.size(); ++idx) {
+        auto table = frozen_tables[idx];
         for (auto it = table->begin_preffix(preffix); it != table->end_preffix(preffix); ++it) {
             if (trx_id != 0 && it.get_trx_id() > trx_id) {
                 continue;
@@ -172,11 +200,10 @@ HeapIterator MemTable::iters_preffix(const std::string &preffix, uint64_t trx_id
     return HeapIterator(items, trx_id);
 }
 
-
 std::optional<std::pair<HeapIterator, HeapIterator>>
 MemTable::iters_monotony_predicate(uint64_t trx_id, std::function<int(const std::string&)> predicate) {
-    std::shared_lock<std::shared_mutex> act_lock(active_mutex);
-    std::shared_lock<std::shared_mutex> frz_lock(frozen_mutex);
+    std::shared_lock<std::shared_mutex> active_lock(active_mutex);
+    std::shared_lock<std::shared_mutex> frozen_lock(frozen_mutex);
     std::vector<Item> items;
 
     auto active_result = active_table->iters_monotony_predicate(predicate);
@@ -193,8 +220,8 @@ MemTable::iters_monotony_predicate(uint64_t trx_id, std::function<int(const std:
         }
     }
 
-    for (size_t idx = 0; idx < frozen_table.size(); ++idx) {
-        auto frozen_result = frozen_table[idx]->iters_monotony_predicate(predicate);
+    for (size_t idx = 0; idx < frozen_tables.size(); ++idx) {
+        auto frozen_result = frozen_tables[idx]->iters_monotony_predicate(predicate);
         if (frozen_result.has_value()) {
             auto [begin, end] = frozen_result.value();
             for (auto it = begin; it != end; ++it) {
@@ -216,32 +243,31 @@ MemTable::iters_monotony_predicate(uint64_t trx_id, std::function<int(const std:
     }
 }
 
-
 void MemTable::freeze_memtable() {
-    std::shared_lock<std::shared_mutex> act_lock(active_mutex);
-    std::shared_lock<std::shared_mutex> frz_lock(frozen_mutex);
+    std::shared_lock<std::shared_mutex> active_lock(active_mutex);
+    std::shared_lock<std::shared_mutex> frozen_lock(frozen_mutex);
     freeze_active_table();
 }
 
 void MemTable::freeze_active_table() {
     frozen_bytes += active_table->get_size();
-    frozen_table.emplace(frozen_table.begin(), std::move(active_table));
+    frozen_tables.emplace(frozen_tables.begin(), std::move(active_table));
     active_table = std::make_shared<SkipList>();
 }
 
 size_t MemTable::get_total_size() {
-    std::shared_lock<std::shared_mutex> act_lock(active_mutex);
-    std::shared_lock<std::shared_mutex> frz_lock(frozen_mutex);
+    std::shared_lock<std::shared_mutex> active_lock(active_mutex);
+    std::shared_lock<std::shared_mutex> frozen_lock(frozen_mutex);
     return active_table->get_size() + frozen_bytes;
 }
 
 size_t MemTable::get_active_size() {
-    std::shared_lock<std::shared_mutex> act_lock(active_mutex);
+    std::shared_lock<std::shared_mutex> active_lock(active_mutex);
     return active_table->get_size();
 }
 
 size_t MemTable::get_frozen_size() {
-    std::shared_lock<std::shared_mutex> act_lock(frozen_mutex);
+    std::shared_lock<std::shared_mutex> active_lock(active_mutex);
     return frozen_bytes;
 }
 }  // LOG STRUCT MERGE TREE
