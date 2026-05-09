@@ -124,7 +124,6 @@ size_t Block::get_offset(size_t index) const {
     return offsets[index];
 }
 
-
 Entry Block::get_entry_by_offset(size_t offset) const {
     Entry entry;
     entry.key = get_key_by_offset(offset);
